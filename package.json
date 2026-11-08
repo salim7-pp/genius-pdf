@@ -1,0 +1,36 @@
+{
+  "name": "genius-pdf",
+  "productName": "Genius PDF",
+  "version": "1.0.0",
+  "description": "Genius PDF — PDF tools that work offline",
+  "author": "Salim Bouzenad",
+  "license": "UNLICENSED",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis portable",
+    "android:init": "npx cap add android && npx cap sync android",
+    "android:sync": "npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "6.2.0",
+    "@capacitor/core": "6.2.0",
+    "@capacitor/filesystem": "6.0.2",
+    "@capacitor/share": "6.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "6.2.0",
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "com.salimbouzenad.geniuspdf",
+    "productName": "Genius PDF",
+    "copyright": "Développé par Salim Bouzenad",
+    "files": ["electron/**", "www/**", "assets/icon.png", "package.json"],
+    "win": { "icon": "assets/icon.ico", "signAndEditExecutable": false },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "shortcutName": "Genius PDF", "artifactName": "Genius-PDF-Setup-${version}.exe", "installerIcon": "assets/icon.ico", "uninstallerIcon": "assets/icon.ico" },
+    "portable": { "artifactName": "Genius-PDF-Portable-${version}.exe" }
+  }
+}

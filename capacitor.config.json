@@ -1,0 +1,6 @@
+{
+  "appId": "com.salimbouzenad.geniuspdf",
+  "appName": "Genius PDF",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}

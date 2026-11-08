@@ -1,0 +1,1222 @@
+<!doctype html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="author" content="Salim Bouzenad">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Genius PDF</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Layout: tool catalogue (category chips + card grid); each tool = file stage + options panel */
+:root{
+  --bg:#F1F2F6; --surface:#FFFFFF; --sunk:#E7E9EF; --fg:#141721; --muted:#596072; --line:#D8DBE4; --paper:#FFFFFF;
+  --accent:#2C3BC4; --accent-fg:#FFFFFF;
+  --c-org:#2C3BC4; --c-opt:#0A7C55; --c-to:#AD5B06; --c-from:#B8401C; --c-edit:#7D33B8; --c-sec:#0E6E86; --c-ai:#B02A72;
+  --danger:#BF2637; --ok:#0A7C55;
+  --f-display:"Readex Pro","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(20,23,33,.06),0 6px 18px rgba(20,23,33,.07);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1016; --surface:#171A22; --sunk:#1F232D; --fg:#E7E9F0; --muted:#9BA1B0; --line:#2B303C;
+  --accent:#8592FF; --accent-fg:#0E1016;
+  --c-org:#8592FF; --c-opt:#3CC690; --c-to:#F0A24E; --c-from:#FF8A62; --c-edit:#C38DF3; --c-sec:#4CC3DE; --c-ai:#F47AB8;
+  --danger:#FF6B7A; --ok:#3CC690; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1016; --surface:#171A22; --sunk:#1F232D; --fg:#E7E9F0; --muted:#9BA1B0; --line:#2B303C;
+  --accent:#8592FF; --accent-fg:#0E1016;
+  --c-org:#8592FF; --c-opt:#3CC690; --c-to:#F0A24E; --c-from:#FF8A62; --c-edit:#C38DF3; --c-sec:#4CC3DE; --c-ai:#F47AB8;
+  --danger:#FF6B7A; --ok:#3CC690; --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:1180px;margin:0 auto;padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:16px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg);font-family:var(--f-display);font-weight:700;font-size:20px}
+.mark{width:32px;height:38px;background:var(--accent);border-radius:4px;clip-path:polygon(0 0,70% 0,100% 24%,100% 100%,0 100%);display:grid;place-items:end center;padding-bottom:5px;color:var(--accent-fg);font:700 9.5px/1 var(--f-display);letter-spacing:.06em}
+.privacy{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+.privacy svg{color:var(--ok);flex:none}
+
+/* home */
+.intro{max-width:64ch;margin-bottom:20px}
+.intro h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,4vw,38px);line-height:1.25;margin:0 0 8px;text-wrap:balance}
+.intro p{margin:0;color:var(--muted)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.chip{padding:7px 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:14px;font-weight:500}
+.chip:hover{border-color:var(--fg)}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.card{display:flex;flex-direction:column;gap:10px;padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--fg);transition:border-color .15s,transform .15s,box-shadow .15s}
+.card:hover{border-color:var(--tc);transform:translateY(-2px);box-shadow:var(--shadow)}
+.card b{font-family:var(--f-display);font-weight:600;font-size:16.5px}
+.card .d{color:var(--muted);font-size:13px;line-height:1.6}
+.card .tag{align-self:flex-start;font-size:11px;font-weight:600;color:var(--tc);background:color-mix(in srgb,var(--tc) 11%,var(--surface));padding:2px 8px;border-radius:999px;letter-spacing:.02em}
+.ticon{flex:none;width:44px;height:44px;border-radius:10px;display:grid;place-items:center;color:var(--tc);background:color-mix(in srgb,var(--tc) 12%,var(--surface))}
+.ticon svg{width:24px;height:24px}
+.limits{margin-top:26px;padding:14px 16px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:13.5px;max-width:80ch}
+
+/* tool */
+.back{display:inline-flex;gap:6px;align-items:center;color:var(--muted);text-decoration:none;font-size:14px;margin-bottom:14px}
+.back:hover{color:var(--fg)}
+.tool-head{display:flex;gap:14px;align-items:center;margin-bottom:22px}
+.tool-head h1{font-family:var(--f-display);font-weight:700;font-size:clamp(22px,3.4vw,30px);margin:0;line-height:1.3}
+.tool-head p{margin:2px 0 0;color:var(--muted);max-width:64ch}
+.tool-head .ticon{width:52px;height:52px}
+.work{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+@media (max-width:840px){.work{grid-template-columns:minmax(0,1fr)}}
+.stage{min-width:0;display:flex;flex-direction:column;gap:14px}
+.drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:44px 20px;border:2px dashed color-mix(in srgb,var(--tc) 45%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--tc) 5%,var(--surface));cursor:pointer;transition:background .15s,border-color .15s}
+.drop:hover,.drop.over{background:color-mix(in srgb,var(--tc) 11%,var(--surface));border-color:var(--tc)}
+.drop b{font-family:var(--f-display);font-weight:600;font-size:18px}
+.drop .sub{color:var(--muted);font-size:14px}
+.drop .up{width:46px;height:46px;border-radius:50%;background:var(--tc);color:var(--surface);display:grid;place-items:center;margin-bottom:8px}
+.drop .up svg{width:22px;height:22px}
+.drop.compact{flex-direction:row;padding:14px 18px;gap:12px;justify-content:flex-start;text-align:start}
+.drop.compact .up{width:34px;height:34px;margin:0}
+.drop.compact b{font-size:15px}
+.drop.compact .sub{display:none}
+.vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.sample{align-self:center;background:none;border:0;color:var(--tc);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:14px;padding:4px}
+.files{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.fcard{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.ord{flex:none;width:26px;height:26px;border-radius:50%;background:var(--sunk);display:grid;place-items:center;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.fthumb{flex:none;width:46px;height:58px;border-radius:4px;background:var(--sunk);display:grid;place-items:center;overflow:hidden;border:1px solid var(--line)}
+.fthumb img{width:100%;height:100%;object-fit:cover}
+.ext{font:700 10.5px var(--f-display);color:var(--tc);letter-spacing:.04em}
+.fmeta{flex:1;min-width:0}
+.fmeta b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fmeta span{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.fmeta em{display:block;color:var(--danger);font-style:normal;font-size:13px}
+.fact{display:flex;gap:4px}
+.ib{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-items:center;font-size:14px;line-height:1}
+.ib:hover:not(:disabled){border-color:var(--fg)}
+.ib:disabled{opacity:.35;cursor:default}
+.ib.del:hover{border-color:var(--danger);color:var(--danger)}
+.spin{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--tc);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.org-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+.link{background:none;border:0;color:var(--tc);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:12px}
+.pg{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.pthumb{aspect-ratio:3/4;max-width:100%;background:var(--sunk);border-radius:4px;display:grid;place-items:center;overflow:hidden}
+.pthumb img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .2s;box-shadow:0 0 0 1px var(--line)}
+.pg figcaption{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pg figcaption .pn{color:var(--fg);font-weight:600}
+.pact{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.pact .ib{width:auto;height:28px}
+.aiout{white-space:pre-wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;line-height:1.85;max-height:65vh;overflow:auto;unicode-bidi:plaintext}
+.aiout:empty::before{content:"يفكّر Claude…";color:var(--muted)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:840px){.panel{position:static}}
+.panel h2{font-family:var(--f-display);font-weight:600;font-size:16px;margin:0}
+.opts{display:flex;flex-direction:column;gap:14px}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld>label,.fld>.lb{font-size:13px;font-weight:600;color:var(--muted)}
+.fld input[type=text],.fld input[type=number],.fld select,.fld textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.fld textarea{resize:vertical;min-height:70px}
+.fld input[type=range]{width:100%;accent-color:var(--tc)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;flex-direction:column;gap:6px}
+.seg.h{flex-direction:row}
+.seg.h label{flex:1;justify-content:center}
+.seg label{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:14px}
+.seg label:has(input:checked){border-color:var(--tc);background:color-mix(in srgb,var(--tc) 8%,var(--surface))}
+.seg input{accent-color:var(--tc);margin-top:5px}
+.seg small{display:block;color:var(--muted);font-size:12px}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.chk input{accent-color:var(--tc);width:16px;height:16px}
+.hint{font-size:12.5px;color:var(--muted);margin:0;line-height:1.6}
+.pad{display:block;width:100%;height:130px;background:var(--paper);border:1px solid var(--line);border-radius:8px;touch-action:none;cursor:crosshair}
+.run{width:100%;padding:13px 16px;border:0;border-radius:10px;background:var(--tc);color:var(--surface);font-family:var(--f-display);font-weight:600;font-size:16px;cursor:pointer;transition:filter .15s}
+.run:hover:not(:disabled){filter:brightness(1.08)}
+.run:disabled{opacity:.45;cursor:not-allowed}
+.status{font-size:14px}
+.status.err{color:var(--danger)}
+.bar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--tc);width:0;transition:width .2s}
+.result{border:1px solid color-mix(in srgb,var(--ok) 45%,var(--line));background:color-mix(in srgb,var(--ok) 7%,var(--surface));border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.rf{display:flex;gap:10px;align-items:center}
+.rf svg{color:var(--ok);flex:none}
+.rf div{min-width:0}
+.rf b{display:block;font-weight:600;overflow-wrap:anywhere}
+.rf span{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dl{padding:10px;border-radius:8px;border:0;background:var(--ok);color:var(--surface);font-weight:600;cursor:pointer}
+.dlmsg{font-size:13px;color:var(--muted);margin:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px);z-index:20;box-shadow:var(--shadow)}
+.foot{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.foot .by{font-family:var(--f-display);font-weight:500;color:var(--fg)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation-duration:2s!important}}
+</style>
+</head>
+<body>
+
+
+<div class="app" dir="rtl" lang="ar">
+  <header class="top">
+    <a class="brand" href="#"><span class="mark">PDF</span>Genius PDF</a>
+    <span class="privacy"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>ملفاتك تُعالَج على جهازك ولا تُرفع إلى أي خادم</span>
+  </header>
+  <main id="view"></main>
+  <footer class="foot"><span>Genius PDF · الإصدار 1.0</span><span class="by" dir="ltr">Développé par Salim Bouzenad</span></footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="cap.js"></script>
+<script src="platform.js"></script>
+<script src="libs/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="libs/pdfjs-dist@3.11.174/build/pdf.worker.min.js"></script>
+<script src="libs/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="libs/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+document.documentElement.dir = 'rtl'; document.documentElement.lang = 'ar';
+const CDN = 'libs/';
+const { PDFDocument, degrees, rgb, StandardFonts } = PDFLib;
+pdfjsLib.GlobalWorkerOptions.workerSrc = CDN + 'pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+const ZipLib = window.JSZip;
+
+const $ = (s, r = document) => r.querySelector(s);
+const AR = /[؀-ۿ]/;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtSize = b => b < 1024 ? b + ' بايت' : b < 1048576 ? Math.round(b / 1024) + ' ك.ب' : (b / 1048576).toFixed(1) + ' م.ب';
+const baseName = n => n.replace(/\.[^.]+$/, '');
+const pdfBlob = bytes => new Blob([bytes], { type: 'application/pdf' });
+const canvasBlob = (c, type = 'image/jpeg', q = .9) => new Promise(r => c.toBlob(r, type, q));
+const canvasBytes = async (c, type, q) => new Uint8Array(await (await canvasBlob(c, type, q)).arrayBuffer());
+const tick = () => new Promise(r => setTimeout(r, 0));
+let uid = 0;
+
+/* lazily loaded libraries */
+const LIBS = { mammoth: 'mammoth@1.6.0/mammoth.browser.min.js', h2c: 'html2canvas@1.4.1/dist/html2canvas.min.js', xlsx: 'xlsx@0.18.5/dist/xlsx.full.min.js', pptx: 'pptxgenjs@3.12.0/dist/pptxgen.bundle.js' };
+const _libs = {};
+function lib(k) {
+  return _libs[k] ||= new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = CDN + LIBS[k]; s.onload = res;
+    s.onerror = () => { delete _libs[k]; rej(new Error('تعذّر تحميل مكوّن لازم لهذه الأداة. تحقق من الاتصال وأعد المحاولة.')); };
+    document.head.appendChild(s);
+  });
+}
+
+/* ---------- icons ---------- */
+const sv = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const DOC = 'M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z M14 3v6h6';
+const ICONS = {
+  merge: sv('<rect x="3" y="3" width="8" height="11" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><path d="M7 14v3.5a1.5 1.5 0 0 0 1.5 1.5H13M17 10V6.5A1.5 1.5 0 0 0 15.5 5H11"/>'),
+  split: sv('<rect x="3" y="3" width="7.5" height="18" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="18" rx="1.5" stroke-dasharray="2.5 2.5"/>'),
+  organize: sv('<rect x="3" y="3" width="7" height="8" rx="1.2"/><rect x="14" y="3" width="7" height="8" rx="1.2"/><rect x="3" y="13" width="7" height="8" rx="1.2"/><rect x="14" y="13" width="7" height="8" rx="1.2"/>'),
+  rotate: sv('<path d="M20 12a8 8 0 1 1-2.35-5.65"/><path d="M20 4v5h-5"/>'),
+  compress: sv('<path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6"/>'),
+  repair: sv('<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>'),
+  'jpg-to-pdf': sv(`<path d="${DOC}"/><path d="m8 17 2.5-3 2 2 1.5-2 2 3z"/>`),
+  'word-to-pdf': sv(`<path d="${DOC}"/><path d="m8 12 1.2 5L11 13.5 12.8 17 14 12"/>`),
+  'excel-to-pdf': sv(`<path d="${DOC}"/><path d="m9 12 5 5M14 12l-5 5"/>`),
+  'pdf-to-jpg': sv('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>'),
+  'pdf-to-word': sv('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 1.5 6L10.5 11 12.5 15 14 9M16 9h2M16 12h2M16 15h2"/>'),
+  'pdf-to-pptx': sv('<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M12 17v4M8 21h8M8 13V9h3a2 2 0 0 1 0 4z"/>'),
+  'pdf-to-excel': sv('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>'),
+  'add-text': sv('<path d="M5 6V4h14v2M12 4v16M9 20h6"/>'),
+  watermark: sv('<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/><path d="M9.5 14.5a2.5 2.5 0 0 0 2.5 2.5"/>'),
+  'page-numbers': sv('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M10.5 9 9.5 18M14.5 9l-1 9M8 11.5h8M7.5 15.5h8"/>'),
+  crop: sv('<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>'),
+  sign: sv('<path d="M3 17c3-1 4-9 6-9s-1 9 1 9 3-4 4.5-4 1 3 2.5 3H21"/><path d="M3 21h18"/>'),
+  redact: sv('<rect x="3" y="4" width="18" height="16" rx="2"/><rect x="6" y="8" width="8" height="3" fill="currentColor"/><path d="M6 15h12"/><rect x="11" y="13.5" width="6" height="3" fill="currentColor"/>'),
+  compare: sv('<rect x="3" y="4" width="8" height="16" rx="1.5"/><rect x="13" y="4" width="8" height="16" rx="1.5"/><path d="M6 9h2M16 9h2M6 13h2M15.5 13h3"/>'),
+  summarize: sv('<path d="M4 6h16M4 10h16M4 14h10M4 18h6"/><path d="m17 15 1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/>'),
+  translate: sv('<path d="M4 5h9M8.5 3v2M6 5c.5 3 3 6 6 7M11 5c-.5 3-3 6-6 7"/><path d="m13 21 4-9 4 9M14.5 18h5"/>'),
+};
+const UP = sv('<path d="M12 16V4M6 10l6-6 6 6M4 20h16"/>');
+const DONE = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg>`;
+
+/* ---------- pdf helpers ---------- */
+async function loadPdf(f) {
+  try { return await PDFDocument.load(f.bytes, { ignoreEncryption: true }); }
+  catch (e) { throw new Error(`تعذّرت قراءة "${f.name}". تأكد أنه ملف PDF سليم وغير محمي بكلمة مرور.`); }
+}
+async function openPdfjs(f) {
+  try { return await pdfjsLib.getDocument({ data: f.bytes.slice(), isEvalSupported: false }).promise; }
+  catch (e) { throw new Error(`تعذّرت قراءة "${f.name}". قد يكون محمياً بكلمة مرور أو تالفاً.`); }
+}
+async function renderPage(doc, n, { scale, width }) {
+  const page = await doc.getPage(n);
+  if (width) scale = width / page.getViewport({ scale: 1 }).width;
+  const vp = page.getViewport({ scale });
+  const c = document.createElement('canvas');
+  c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  const size = page.getViewport({ scale: 1 });
+  return { canvas: c, w: size.width, h: size.height, page, vp };
+}
+async function subsetPdf(src, indices) {
+  const out = await PDFDocument.create();
+  (await out.copyPages(src, indices)).forEach(p => out.addPage(p));
+  return out.save();
+}
+async function imagesToPdf(canvases) {
+  const out = await PDFDocument.create();
+  for (const { canvas, w, h, q } of canvases) {
+    const img = await out.embedJpg(await canvasBytes(canvas, 'image/jpeg', q || .85));
+    out.addPage([w, h]).drawImage(img, { x: 0, y: 0, width: w, height: h });
+  }
+  return out.save();
+}
+function parseRanges(s, max) {
+  s = s.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\s*[-–]\s*/g, '-');
+  const parts = s.split(/[,،\s]+/).filter(Boolean);
+  if (!parts.length) throw new Error('اكتب أرقام الصفحات، مثلاً: 1-3, 5');
+  return parts.map(p => {
+    const m = p.match(/^(\d+)(?:-(\d+))?$/);
+    if (!m) throw new Error(`صيغة غير مفهومة: "${p}". اكتب مثلاً 1-3, 5`);
+    let a = +m[1], b = m[2] ? +m[2] : a;
+    if (a > b) [a, b] = [b, a];
+    if (a < 1 || b > max) throw new Error(`الصفحة ${a < 1 ? a : b} غير موجودة؛ الملف فيه ${max} صفحة.`);
+    return [a, b];
+  });
+}
+const pagesFromSpec = (spec, n) => spec === 'all' ? [...Array(n).keys()] : spec === 'first' ? [0] : spec === 'last' ? [n - 1] : [...new Set(parseRanges(spec, n).flatMap(([a, b]) => Array.from({ length: b - a + 1 }, (_, k) => a - 1 + k)))];
+async function zipOf(entries) {
+  const zip = new ZipLib();
+  entries.forEach(e => zip.file(e.name, e.data));
+  return zip.generateAsync({ type: 'blob' });
+}
+async function textImage(text, pt, color, angle = 0, family = '"Readex Pro","IBM Plex Sans Arabic",sans-serif', weight = 700) {
+  const S = 4, px = pt * S, font = `${weight} ${px}px ${family}`;
+  try { await document.fonts.load(font, text); } catch (e) {}
+  const lines = text.split('\n');
+  const m = document.createElement('canvas').getContext('2d'); m.font = font;
+  const lh = px * 1.4, w = Math.max(...lines.map(l => m.measureText(l).width)) + px * .3, h = lh * lines.length;
+  const a = angle * Math.PI / 180;
+  const cw = Math.ceil(Math.abs(w * Math.cos(a)) + Math.abs(h * Math.sin(a)));
+  const ch = Math.ceil(Math.abs(w * Math.sin(a)) + Math.abs(h * Math.cos(a)));
+  const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+  const x = c.getContext('2d');
+  x.translate(cw / 2, ch / 2); x.rotate(-a); x.font = font; x.fillStyle = color;
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  if (AR.test(text)) x.direction = 'rtl';
+  lines.forEach((l, i) => x.fillText(l, 0, (i - (lines.length - 1) / 2) * lh));
+  return { bytes: await canvasBytes(c, 'image/png'), w: cw / S, h: ch / S };
+}
+function placeBox(pos, W, H, w, h, M = 36) {
+  const v = pos[0], hz = pos[1];
+  const x = hz === 'c' ? (W - w) / 2 : hz === 'r' ? W - M - w : M;
+  const y = v === 'm' ? (H - h) / 2 : v === 'b' ? M : H - M - h;
+  return { x, y };
+}
+async function imageToEmbeddable(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    const x = c.getContext('2d'), png = file.type === 'image/png';
+    if (!png) { x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); }
+    x.drawImage(img, 0, 0);
+    return { png, bytes: await canvasBytes(c, png ? 'image/png' : 'image/jpeg', .92), w: c.width, h: c.height };
+  } catch (e) { throw new Error(`تعذّر فتح الصورة "${file.name}".`); }
+  finally { URL.revokeObjectURL(url); }
+}
+
+/* text extraction */
+async function pageLines(page) {
+  const tc = await page.getTextContent();
+  const rows = [];
+  for (const it of tc.items) {
+    if (!it.str || !it.str.trim()) continue;
+    const x = it.transform[4], y = it.transform[5], h = Math.hypot(it.transform[2], it.transform[3]) || 10;
+    let r = rows.find(r => Math.abs(r.y - y) < Math.max(r.h, h) * .5);
+    if (!r) rows.push(r = { y, h, items: [] });
+    r.items.push({ x, w: it.width, s: it.str, h });
+  }
+  rows.sort((a, b) => b.y - a.y);
+  return rows.map(r => {
+    const rtl = r.items.some(i => AR.test(i.s));
+    r.items.sort((a, b) => rtl ? b.x - a.x : a.x - b.x);
+    return { rtl, items: r.items, h: r.h };
+  });
+}
+function gapOf(a, b, rtl) { return rtl ? a.x - (b.x + b.w) : b.x - (a.x + a.w); }
+function lineText(l) {
+  let s = '';
+  l.items.forEach((it, i) => { if (i && gapOf(l.items[i - 1], it, l.rtl) > it.h * .2 && !/\s$/.test(s)) s += ' '; s += it.s; });
+  return s.replace(/\s+/g, ' ').trim();
+}
+function lineCells(l) {
+  const cells = []; let cur = '';
+  l.items.forEach((it, i) => {
+    if (i && gapOf(l.items[i - 1], it, l.rtl) > it.h * 1.4) { cells.push(cur.trim()); cur = ''; }
+    else if (i && gapOf(l.items[i - 1], it, l.rtl) > it.h * .2) cur += ' ';
+    cur += it.s;
+  });
+  cells.push(cur.trim());
+  return cells.map(c => { const n = c.replace(/[,\s]/g, ''); return /^-?\d+(\.\d+)?$/.test(n) && n.length < 15 ? +n : c; });
+}
+async function pdfText(f, prog) {
+  const doc = await openPdfjs(f), parts = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    prog?.(i - 1, doc.numPages, `قراءة الصفحة ${i} من ${doc.numPages}`);
+    parts.push((await pageLines(await doc.getPage(i))).map(lineText).join('\n'));
+  }
+  doc.destroy();
+  const t = parts.join('\n\n').trim();
+  if (!t) throw new Error('لا يحتوي الملف على نص قابل للقراءة؛ يبدو أنه صور ممسوحة ضوئياً.');
+  return t;
+}
+
+/* docx writer (text only) */
+async function buildDocx(paras) {
+  const clean = s => esc(String(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, ''));
+  const body = paras.map(p => {
+    if (p.pageBreak) return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+    const sz = p.big ? 30 : 22;
+    return `<w:p><w:pPr>${p.rtl ? '<w:bidi/><w:jc w:val="right"/>' : ''}<w:spacing w:after="80"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>${p.b ? '<w:b/><w:bCs/>' : ''}${p.rtl ? '<w:rtl/>' : ''}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/></w:rPr><w:t xml:space="preserve">${clean(p.text)}</w:t></w:r></w:p>`;
+  }).join('');
+  const zip = new ZipLib();
+  zip.file('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+  zip.file('_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+  zip.file('word/document.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`);
+  return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+}
+const docxFromText = t => buildDocx(t.split('\n').map(l => ({ text: l, rtl: AR.test(l), b: /^(#+\s|[^•\-].{0,60}:$)/.test(l.trim()) })));
+
+/* html → pdf (Word / Excel) */
+async function htmlToPdf(html, { landscape = false, prog } = {}) {
+  await lib('h2c');
+  const pw = landscape ? 1040 : 720;
+  const rtl = (html.replace(/<[^>]+>/g, '').match(/[؀-ۿ]/g) || []).length > 20;
+  const box = document.createElement('div');
+  box.style.cssText = `position:fixed;left:-30000px;top:0;width:${pw}px;padding:0 4px;background:#fff;color:#111;font:14px/1.75 "IBM Plex Sans Arabic",Arial,sans-serif`;
+  box.dir = rtl ? 'rtl' : 'ltr';
+  box.innerHTML = `<style>.xd img{max-width:100%;height:auto}.xd table{border-collapse:collapse;width:100%;font-size:12px;margin:0 0 14px}.xd td,.xd th{border:1px solid #b8bcc6;padding:4px 7px;vertical-align:top}.xd h1{font-size:26px;margin:0 0 12px}.xd h2{font-size:21px;margin:18px 0 10px}.xd h3{font-size:17px}.xd p{margin:0 0 10px}.xd .sh{font:700 16px Arial,sans-serif;margin:8px 0}</style><div class="xd">${html}</div>`;
+  document.body.appendChild(box);
+  try {
+    try { await document.fonts.ready; } catch (e) {}
+    prog?.(1, 3, 'تنسيق الصفحات');
+    const scale = Math.min(2, 30000 / Math.max(box.scrollHeight, 1));
+    const canvas = await html2canvas(box, { scale, backgroundColor: '#ffffff', logging: false, useCORS: true });
+    prog?.(2, 3, 'إنشاء ملف PDF');
+    const [PW, PH] = landscape ? [841.89, 595.28] : [595.28, 841.89], M = 40;
+    const pxPerPt = canvas.width / (PW - 2 * M), sliceH = Math.floor((PH - 2 * M) * pxPerPt);
+    const out = await PDFDocument.create();
+    for (let y = 0; y < canvas.height; y += sliceH) {
+      const h = Math.min(sliceH, canvas.height - y);
+      const c = document.createElement('canvas'); c.width = canvas.width; c.height = h;
+      const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, h);
+      x.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+      const img = await out.embedJpg(await canvasBytes(c, 'image/jpeg', .9));
+      out.addPage([PW, PH]).drawImage(img, { x: M, y: PH - M - h / pxPerPt, width: PW - 2 * M, height: h / pxPerPt });
+    }
+    return out.save();
+  } finally { box.remove(); }
+}
+
+/* Claude (AI tools) */
+async function getSample() {
+  const s = window.claude?.use ? await window.claude.use('sample') : null;
+  if (!s) throw new Error('أدوات الذكاء الاصطناعي تعمل فقط عند فتح الصفحة داخل Claude.');
+  return s;
+}
+async function ask(s, prompt, onText) {
+  try { return (await s(prompt, { onText: ({ text }) => onText(text), cache: false })).text; }
+  catch (e) {
+    throw new Error({ not_granted: 'لم يُسمح باستخدام Claude لهذه الصفحة.', rate_limited: 'طلبات كثيرة في وقت قصير. انتظر قليلاً ثم أعد المحاولة.' }[e?.code] || e?.message || 'تعذّر إكمال الطلب.');
+  }
+}
+const LANGS = [['ar', 'العربية'], ['fr', 'Français'], ['en', 'English'], ['es', 'Español'], ['de', 'Deutsch'], ['tr', 'Türkçe']];
+const langSelect = (name, val) => `<select id="o-${name}" name="${name}">${LANGS.map(([v, t]) => `<option value="${v}" ${v === val ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+const langName = v => (LANGS.find(l => l[0] === v) || LANGS[0])[1];
+
+/* ---------- tools ---------- */
+const CATS = [
+  ['all', 'كل الأدوات'], ['org', 'تنظيم PDF'], ['opt', 'تحسين PDF'], ['to', 'تحويل إلى PDF'], ['from', 'تحويل من PDF'],
+  ['edit', 'تعديل PDF'], ['sec', 'أمان PDF'], ['ai', 'ذكاء اصطناعي'],
+];
+const IS_APP = !!window.PDFW_APP;
+const ORDER0 = ['merge', 'split', 'compress', 'pdf-to-word', 'pdf-to-pptx', 'pdf-to-excel', 'word-to-pdf', 'excel-to-pdf', 'jpg-to-pdf', 'pdf-to-jpg',
+  'organize', 'rotate', 'add-text', 'sign', 'watermark', 'page-numbers', 'crop', 'redact', 'compare', 'repair', 'summarize', 'translate'];
+const TOOLS_AI = ['summarize', 'translate'];
+const ORDER = ORDER0.filter(id => !(IS_APP && TOOLS_AI.includes(id)));
+const radio = (name, items, val, h) => `<div class="seg${h ? ' h' : ''}">${items.map(([v, t, s]) => `<label><input type="radio" name="${name}" value="${v}" ${v === val ? 'checked' : ''}><span>${t}${s ? `<small>${s}</small>` : ''}</span></label>`).join('')}</div>`;
+const POS9 = `<option value="tr">أعلى اليمين</option><option value="tc">أعلى الوسط</option><option value="tl">أعلى اليسار</option><option value="mr">الوسط يميناً</option><option value="mc">المنتصف</option><option value="ml">الوسط يساراً</option><option value="br">أسفل اليمين</option><option value="bc">أسفل الوسط</option><option value="bl">أسفل اليسار</option>`;
+const pagePick = (val = 'all') => `<div class="fld"><label for="o-pages">الصفحات</label><select id="o-pages" name="pages"><option value="all" ${val === 'all' ? 'selected' : ''}>كل الصفحات</option><option value="first" ${val === 'first' ? 'selected' : ''}>الصفحة الأولى</option><option value="last" ${val === 'last' ? 'selected' : ''}>الصفحة الأخيرة</option><option value="custom">صفحات محددة…</option></select><input type="text" name="custom" id="o-custom" placeholder="مثال: 1, 3-4" dir="ltr" hidden></div>`;
+const pagesOpt = (o, n) => pagesFromSpec(o.pages === 'custom' ? o.custom : o.pages, n);
+
+const TOOLS = {
+  merge: {
+    cat: 'org', name: 'دمج PDF', multi: true, accept: 'pdf', btn: 'دمج الملفات',
+    desc: 'اجمع عدة ملفات PDF في ملف واحد بالترتيب الذي تختاره.',
+    async run(files, o, prog) {
+      if (files.length < 2) throw new Error('أضف ملفين على الأقل للدمج.');
+      const out = await PDFDocument.create();
+      for (let i = 0; i < files.length; i++) {
+        prog(i, files.length, `دمج الملف ${i + 1} من ${files.length}`);
+        const src = await loadPdf(files[i]);
+        (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p));
+      }
+      return { blob: pdfBlob(await out.save()), filename: 'مدمج.pdf', note: `${out.getPageCount()} صفحة` };
+    }
+  },
+  split: {
+    cat: 'org', name: 'تقسيم PDF', accept: 'pdf', btn: 'تقسيم الملف',
+    desc: 'افصل كل صفحة في ملف، أو قسّم إلى نطاقات، أو استخرج صفحات بعينها.',
+    options: () => `
+      <div class="fld"><span class="lb">طريقة التقسيم</span>${radio('mode', [
+        ['all', 'كل صفحة في ملف', 'تحصل على ملف مضغوط ZIP'],
+        ['ranges', 'حسب النطاقات', 'كل نطاق يصبح ملفاً مستقلاً'],
+        ['extract', 'استخراج صفحات', 'الصفحات المختارة في ملف واحد']], 'ranges')}</div>
+      <div class="fld"><label for="o-ranges">الصفحات</label><input type="text" id="o-ranges" name="ranges" value="1-2, 3-5" dir="ltr">
+      <p class="hint">افصل بفاصلة. مثال: 1-3, 5, 8-10</p></div>`,
+    async run([f], o, prog) {
+      const src = await loadPdf(f), n = src.getPageCount(), base = baseName(f.name);
+      const groups = o.mode === 'all' ? Array.from({ length: n }, (_, i) => [i + 1, i + 1]) : parseRanges(o.ranges, n);
+      if (o.mode === 'extract') {
+        const idx = pagesFromSpec(o.ranges, n);
+        return { blob: pdfBlob(await subsetPdf(src, idx)), filename: `${base}-مستخرج.pdf`, note: `${idx.length} صفحة` };
+      }
+      const entries = [];
+      for (let i = 0; i < groups.length; i++) {
+        const [a, b] = groups[i];
+        prog(i, groups.length, `إنشاء الملف ${i + 1} من ${groups.length}`);
+        entries.push({ name: a === b ? `${base}-صفحة-${a}.pdf` : `${base}-${a}-${b}.pdf`, data: await subsetPdf(src, Array.from({ length: b - a + 1 }, (_, k) => a - 1 + k)) });
+      }
+      if (entries.length === 1) return { blob: pdfBlob(entries[0].data), filename: entries[0].name, note: 'ملف واحد' };
+      return { blob: await zipOf(entries), filename: `${base}-مقسم.zip`, note: `${entries.length} ملفات داخل ZIP` };
+    }
+  },
+  organize: {
+    cat: 'org', name: 'ترتيب الصفحات', accept: 'pdf', btn: 'حفظ الترتيب الجديد',
+    desc: 'أعد ترتيب الصفحات، دوّر أي صفحة، أو احذف ما لا تحتاجه.',
+    options: () => `<p class="hint">أسفل كل صفحة: → تقديم، ↻ تدوير، ← تأخير، ✕ حذف. الرقم الغامق هو الموضع الجديد.</p>`,
+    async run([f]) {
+      const pages = state.org?.pages || [];
+      if (!pages.length) throw new Error('لم تبقَ أي صفحة. استعد الترتيب الأصلي أو اختر ملفاً آخر.');
+      const src = await loadPdf(f), out = await PDFDocument.create();
+      const copied = await out.copyPages(src, pages.map(p => p.src));
+      copied.forEach((p, i) => { p.setRotation(degrees((p.getRotation().angle + pages[i].rot) % 360)); out.addPage(p); });
+      return { blob: pdfBlob(await out.save()), filename: `${baseName(f.name)}-مرتب.pdf`, note: `${pages.length} صفحة` };
+    }
+  },
+  rotate: {
+    cat: 'org', name: 'تدوير PDF', accept: 'pdf', btn: 'تدوير الصفحات',
+    desc: 'دوّر كل صفحات الملف أو صفحات محددة منه.',
+    options: () => `<div class="fld"><span class="lb">الاتجاه</span>${radio('angle', [['90', '٩٠° مع عقارب الساعة'], ['180', '١٨٠°'], ['270', '٩٠° عكس عقارب الساعة']], '90')}</div>${pagePick()}`,
+    async run([f], o) {
+      const doc = await loadPdf(f), pages = doc.getPages(), idx = pagesOpt(o, pages.length);
+      idx.forEach(i => pages[i].setRotation(degrees((pages[i].getRotation().angle + +o.angle) % 360)));
+      return { blob: pdfBlob(await doc.save()), filename: `${baseName(f.name)}-مدور.pdf`, note: `دُوّرت ${idx.length} صفحة` };
+    }
+  },
+  compress: {
+    cat: 'opt', name: 'ضغط PDF', accept: 'pdf', btn: 'ضغط الملف',
+    desc: 'قلّل حجم الملف ليسهل إرساله بالبريد أو رفعه على المواقع.',
+    options: () => `
+      <div class="fld"><span class="lb">مستوى الضغط</span>${radio('level', [
+        ['strong', 'ضغط قوي', 'أصغر حجم، جودة أقل'],
+        ['rec', 'موصى به', 'توازن بين الحجم والجودة'],
+        ['light', 'ضغط خفيف', 'جودة عالية، تقليل أقل']], 'rec')}</div>
+      <p class="hint">تتحول الصفحات إلى صور مضغوطة، فلن يكون النص قابلاً للتحديد أو البحث بعد الضغط.</p>`,
+    async run([f], o, prog) {
+      const [scale, q] = { strong: [1, .45], rec: [1.4, .6], light: [2, .78] }[o.level];
+      const doc = await openPdfjs(f), pages = [];
+      const out = await PDFDocument.create();
+      for (let i = 1; i <= doc.numPages; i++) {
+        prog(i - 1, doc.numPages, `ضغط الصفحة ${i} من ${doc.numPages}`);
+        const { canvas, w, h } = await renderPage(doc, i, { scale });
+        const img = await out.embedJpg(await canvasBytes(canvas, 'image/jpeg', q)); canvas.width = 0;
+        out.addPage([w, h]).drawImage(img, { x: 0, y: 0, width: w, height: h });
+      }
+      doc.destroy();
+      const bytes = await out.save();
+      if (bytes.length >= f.size) return { blob: pdfBlob(f.bytes), filename: f.name, note: 'الملف مضغوط أصلاً، فأبقينا النسخة الأصلية' };
+      return { blob: pdfBlob(bytes), filename: `${baseName(f.name)}-مضغوط.pdf`, note: `كان ${fmtSize(f.size)} · أصغر بنسبة ${Math.round((1 - bytes.length / f.size) * 100)}%` };
+    }
+  },
+  repair: {
+    cat: 'opt', name: 'إصلاح PDF', accept: 'pdf', btn: 'إصلاح الملف',
+    desc: 'أعد بناء ملف PDF تالف أو لا يفتح بشكل صحيح واستعد ما يمكن من صفحاته.',
+    async run([f], o, prog) {
+      try {
+        const src = await PDFDocument.load(f.bytes, { ignoreEncryption: true, throwOnInvalidObject: false, updateMetadata: false });
+        prog(1, 2, 'إعادة بناء بنية الملف');
+        const out = await PDFDocument.create();
+        (await out.copyPages(src, src.getPageIndices())).forEach(p => out.addPage(p));
+        return { blob: pdfBlob(await out.save()), filename: `${baseName(f.name)}-مصلح.pdf`, note: `أُعيد بناء ${out.getPageCount()} صفحة` };
+      } catch (e) {
+        const doc = await openPdfjs(f), pages = [];
+        for (let i = 1; i <= doc.numPages; i++) {
+          prog(i - 1, doc.numPages, `استعادة الصفحة ${i}`);
+          try { pages.push({ ...(await renderPage(doc, i, { scale: 2 })), q: .85 }); } catch (er) {}
+        }
+        doc.destroy();
+        if (!pages.length) throw new Error('الملف متضرر بشدة ولم نتمكن من استعادة أي صفحة.');
+        return { blob: pdfBlob(await imagesToPdf(pages)), filename: `${baseName(f.name)}-مصلح.pdf`, note: `استُعيدت ${pages.length} صفحة كصور` };
+      }
+    }
+  },
+  'jpg-to-pdf': {
+    cat: 'to', name: 'صور إلى PDF', multi: true, accept: 'img', btn: 'إنشاء PDF',
+    desc: 'حوّل صور JPG وPNG إلى ملف PDF واحد، صورة في كل صفحة.',
+    options: () => `
+      <div class="fld"><span class="lb">حجم الصفحة</span>${radio('size', [['fit', 'بحجم الصورة'], ['a4p', 'A4 طولي'], ['a4l', 'A4 عرضي']], 'a4p')}</div>
+      <div class="fld"><label for="o-margin">الهامش</label><select id="o-margin" name="margin"><option value="0">بدون هامش</option><option value="20" selected>صغير</option><option value="48">كبير</option></select></div>`,
+    async run(files, o, prog) {
+      const out = await PDFDocument.create(), m = +o.margin;
+      for (let i = 0; i < files.length; i++) {
+        prog(i, files.length, `إضافة الصورة ${i + 1} من ${files.length}`);
+        const e = await imageToEmbeddable(files[i].file);
+        const img = e.png ? await out.embedPng(e.bytes) : await out.embedJpg(e.bytes);
+        const [pw, ph] = o.size === 'fit' ? [e.w * .75 + 2 * m, e.h * .75 + 2 * m] : o.size === 'a4p' ? [595.28, 841.89] : [841.89, 595.28];
+        const s = Math.min((pw - 2 * m) / e.w, (ph - 2 * m) / e.h), w = e.w * s, h = e.h * s;
+        out.addPage([pw, ph]).drawImage(img, { x: (pw - w) / 2, y: (ph - h) / 2, width: w, height: h });
+      }
+      return { blob: pdfBlob(await out.save()), filename: 'صور.pdf', note: `${files.length} صفحة` };
+    }
+  },
+  'word-to-pdf': {
+    cat: 'to', name: 'Word إلى PDF', accept: 'docx', btn: 'تحويل إلى PDF',
+    desc: 'حوّل مستندات Word ‏(‎.docx) إلى PDF مع النصوص والجداول والصور.',
+    options: () => `<p class="hint">يُحافظ على العناوين والفقرات والجداول والصور. التنسيقات المتقدمة كالأعمدة والرؤوس والتذييلات قد تختلف عن الأصل.</p>`,
+    async run([f], o, prog) {
+      await lib('mammoth'); prog(0, 3, 'قراءة المستند');
+      let html;
+      try { html = (await mammoth.convertToHtml({ arrayBuffer: f.bytes.buffer.slice(f.bytes.byteOffset, f.bytes.byteOffset + f.bytes.byteLength) })).value; }
+      catch (e) { throw new Error('تعذّرت قراءة ملف Word. تأكد أنه بصيغة ‎.docx وليس ‎.doc القديمة.'); }
+      if (!html.trim()) throw new Error('المستند فارغ.');
+      return { blob: pdfBlob(await htmlToPdf(html, { prog })), filename: `${baseName(f.name)}.pdf` };
+    }
+  },
+  'excel-to-pdf': {
+    cat: 'to', name: 'Excel إلى PDF', accept: 'xlsx', btn: 'تحويل إلى PDF',
+    desc: 'حوّل جداول Excel أو CSV إلى PDF، كل ورقة في قسم مستقل.',
+    options: () => `<div class="fld"><span class="lb">اتجاه الصفحة</span>${radio('orient', [['l', 'عرضي'], ['p', 'طولي']], 'l', true)}</div>`,
+    async run([f], o, prog) {
+      await lib('xlsx'); prog(0, 3, 'قراءة الجدول');
+      let wb; try { wb = XLSX.read(f.bytes, { type: 'array' }); } catch (e) { throw new Error('تعذّرت قراءة ملف Excel.'); }
+      const html = wb.SheetNames.map(n => {
+        const t = XLSX.utils.sheet_to_html(wb.Sheets[n]); const m = t.match(/<table[\s\S]*<\/table>/i);
+        return m ? `<div class="sh">${esc(n)}</div>${m[0]}` : '';
+      }).join('');
+      if (!html) throw new Error('الملف لا يحتوي على بيانات.');
+      return { blob: pdfBlob(await htmlToPdf(html, { landscape: o.orient === 'l', prog })), filename: `${baseName(f.name)}.pdf`, note: `${wb.SheetNames.length} ورقة` };
+    }
+  },
+  'pdf-to-jpg': {
+    cat: 'from', name: 'PDF إلى JPG', accept: 'pdf', btn: 'تحويل إلى صور',
+    desc: 'حوّل كل صفحة من الملف إلى صورة JPG عالية الجودة.',
+    options: () => `<div class="fld"><span class="lb">الجودة</span>${radio('q', [['normal', 'عادية', 'مناسبة للشاشة والمشاركة'], ['high', 'عالية', 'مناسبة للطباعة، حجم أكبر']], 'normal')}</div>`,
+    async run([f], o, prog) {
+      const doc = await openPdfjs(f), scale = o.q === 'high' ? 2.8 : 1.6, base = baseName(f.name), entries = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        prog(i - 1, doc.numPages, `تحويل الصفحة ${i} من ${doc.numPages}`);
+        const { canvas } = await renderPage(doc, i, { scale });
+        entries.push({ name: `${base}-${i}.jpg`, data: await canvasBlob(canvas, 'image/jpeg', .9) }); canvas.width = 0;
+      }
+      doc.destroy();
+      if (entries.length === 1) return { blob: entries[0].data, filename: entries[0].name, note: 'صورة واحدة' };
+      return { blob: await zipOf(entries), filename: `${base}-صور.zip`, note: `${entries.length} صورة داخل ZIP` };
+    }
+  },
+  'pdf-to-word': {
+    cat: 'from', name: 'PDF إلى Word', accept: 'pdf', btn: 'تحويل إلى Word',
+    desc: 'استخرج نص الملف إلى مستند Word قابل للتعديل، مع دعم كامل للعربية.',
+    options: () => `<p class="hint">يُنقل النص مع الحفاظ على الأسطر وفواصل الصفحات واتجاه الكتابة. الصور والتنسيق الدقيق لا يُنقلان. الملفات الممسوحة ضوئياً لا تحتوي على نص.</p>`,
+    async run([f], o, prog) {
+      const doc = await openPdfjs(f), paras = []; let any = false;
+      for (let i = 1; i <= doc.numPages; i++) {
+        prog(i - 1, doc.numPages, `استخراج الصفحة ${i} من ${doc.numPages}`);
+        const lines = await pageLines(await doc.getPage(i));
+        const hs = lines.map(l => l.h).sort((a, b) => a - b), med = hs[Math.floor(hs.length / 2)] || 10;
+        lines.forEach(l => { any = true; paras.push({ text: lineText(l), rtl: l.rtl, b: l.h > med * 1.3, big: l.h > med * 1.5 }); });
+        if (i < doc.numPages) paras.push({ pageBreak: true });
+      }
+      doc.destroy();
+      if (!any) throw new Error('لا يحتوي الملف على نص قابل للاستخراج؛ يبدو أنه صور ممسوحة ضوئياً.');
+      return { blob: await buildDocx(paras), filename: `${baseName(f.name)}.docx` };
+    }
+  },
+  'pdf-to-pptx': {
+    cat: 'from', name: 'PDF إلى PowerPoint', accept: 'pdf', btn: 'تحويل إلى PowerPoint',
+    desc: 'حوّل كل صفحة إلى شريحة في عرض تقديمي ‎.pptx.',
+    options: () => `<p class="hint">كل صفحة تصبح شريحة بصورة عالية الدقة، فيبقى الشكل مطابقاً للأصل.</p>`,
+    async run([f], o, prog) {
+      await lib('pptx');
+      const doc = await openPdfjs(f), p1 = (await doc.getPage(1)).getViewport({ scale: 1 });
+      const W = 10, H = +(10 * p1.height / p1.width).toFixed(3);
+      const pptx = new PptxGenJS(); pptx.defineLayout({ name: 'PDF', width: W, height: H }); pptx.layout = 'PDF';
+      for (let i = 1; i <= doc.numPages; i++) {
+        prog(i - 1, doc.numPages, `إنشاء الشريحة ${i} من ${doc.numPages}`);
+        const { canvas, w, h } = await renderPage(doc, i, { width: 1600 });
+        const s = Math.min(W / w, H / h), iw = w * s, ih = h * s;
+        pptx.addSlide().addImage({ data: canvas.toDataURL('image/jpeg', .88).replace(/^data:/, ''), x: (W - iw) / 2, y: (H - ih) / 2, w: iw, h: ih });
+        canvas.width = 0;
+      }
+      doc.destroy();
+      const blob = await pptx.write({ outputType: 'blob' });
+      return { blob, filename: `${baseName(f.name)}.pptx`, note: `${doc.numPages} شريحة` };
+    }
+  },
+  'pdf-to-excel': {
+    cat: 'from', name: 'PDF إلى Excel', accept: 'pdf', btn: 'تحويل إلى Excel',
+    desc: 'استخرج الجداول والأرقام من PDF إلى جدول Excel.',
+    options: () => `<label class="chk"><input type="checkbox" name="one" id="o-one"> كل الصفحات في ورقة واحدة</label><p class="hint">تُقسَّم الأعمدة حسب المسافات بين النصوص، وتتحول الأرقام إلى قيم قابلة للحساب. يعمل جيداً مع الجداول البسيطة.</p>`,
+    async run([f], o, prog) {
+      await lib('xlsx');
+      const doc = await openPdfjs(f), wb = XLSX.utils.book_new(), all = []; let rtl = false, any = false;
+      for (let i = 1; i <= doc.numPages; i++) {
+        prog(i - 1, doc.numPages, `قراءة الصفحة ${i} من ${doc.numPages}`);
+        const lines = await pageLines(await doc.getPage(i));
+        const rows = lines.map(l => { if (l.rtl) rtl = true; any = true; return lineCells(l); });
+        if (o.one) all.push(...rows, []); else XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows.length ? rows : [['']]), `صفحة ${i}`);
+      }
+      doc.destroy();
+      if (!any) throw new Error('لا يحتوي الملف على نص قابل للاستخراج.');
+      if (o.one) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(all), 'البيانات');
+      if (rtl) wb.Workbook = { Views: [{ RTL: true }] };
+      const out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      return { blob: new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), filename: `${baseName(f.name)}.xlsx` };
+    }
+  },
+  'add-text': {
+    cat: 'edit', name: 'تعديل PDF', accept: 'pdf', btn: 'إضافة النص',
+    desc: 'أضف نصاً أو ملاحظة أو تاريخاً على الصفحات التي تختارها.',
+    options: () => `
+      <div class="fld"><label for="o-text">النص</label><textarea id="o-text" name="text">تمت المراجعة — 2026/11/08</textarea></div>
+      ${pagePick('first')}
+      <div class="fld"><label for="o-pos">الموضع</label><select id="o-pos" name="pos">${POS9.replace('value="tr"', 'value="tr" selected')}</select></div>
+      <div class="row2"><div class="fld"><label for="o-size">الحجم</label><select id="o-size" name="size"><option value="10">صغير</option><option value="14" selected>متوسط</option><option value="22">كبير</option><option value="36">كبير جداً</option></select></div>
+      <div class="fld"><label for="o-color">اللون</label><select id="o-color" name="color"><option value="#111111">أسود</option><option value="#1d3fbf">أزرق</option><option value="#c0262d">أحمر</option><option value="#0a7c55">أخضر</option></select></div></div>`,
+    async run([f], o) {
+      if (!o.text.trim()) throw new Error('اكتب النص المراد إضافته.');
+      const doc = await loadPdf(f), pages = doc.getPages(), idx = pagesOpt(o, pages.length);
+      const ti = await textImage(o.text.trim(), +o.size, o.color, 0, '"IBM Plex Sans Arabic",sans-serif', 600);
+      const img = await doc.embedPng(ti.bytes);
+      idx.forEach(i => { const { width: W, height: H } = pages[i].getSize(); const s = Math.min(1, (W - 72) / ti.w); const p = placeBox(o.pos, W, H, ti.w * s, ti.h * s); pages[i].drawImage(img, { ...p, width: ti.w * s, height: ti.h * s }); });
+      return { blob: pdfBlob(await doc.save()), filename: `${baseName(f.name)}-معدل.pdf`, note: `أُضيف النص إلى ${idx.length} صفحة` };
+    }
+  },
+  sign: {
+    cat: 'sec', name: 'توقيع PDF', accept: 'pdf', btn: 'توقيع الملف',
+    desc: 'ارسم توقيعك أو اكتبه وضعه على الصفحات التي تختارها.',
+    options: () => `
+      <div class="fld"><span class="lb">طريقة التوقيع</span>${radio('smode', [['draw', 'رسم'], ['type', 'كتابة']], 'draw', true)}</div>
+      <div class="fld" id="padbox"><canvas class="pad" id="pad" aria-label="مساحة رسم التوقيع"></canvas><button type="button" class="link" id="padclear" style="align-self:flex-start">مسح التوقيع</button></div>
+      <div class="fld" id="typebox" hidden><label for="o-sname">اسمك</label><input type="text" id="o-sname" name="sname" value="سليم بوزناد"></div>
+      <div class="row2"><div class="fld"><label for="o-color">لون الحبر</label><select id="o-color" name="color"><option value="#0f2a8a">أزرق</option><option value="#111111">أسود</option></select></div>
+      <div class="fld"><label for="o-pos">الموضع</label><select id="o-pos" name="pos"><option value="bl" selected>أسفل اليسار</option><option value="bc">أسفل الوسط</option><option value="br">أسفل اليمين</option><option value="tl">أعلى اليسار</option><option value="tr">أعلى اليمين</option></select></div></div>
+      ${pagePick('last')}
+      <div class="fld"><label for="o-sw">عرض التوقيع: <output id="o-sw-v">150</output> نقطة</label><input type="range" id="o-sw" name="sw" min="70" max="260" value="150"></div>`,
+    mount() {
+      const pad = $('#pad'), ctx = pad.getContext('2d'); let drawing = false, last;
+      const fit = () => { const r = pad.getBoundingClientRect(); if (!r.width) return; pad.width = r.width * 2; pad.height = r.height * 2; state.sigInk = false; };
+      fit();
+      const pt = e => { const r = pad.getBoundingClientRect(); return [(e.clientX - r.left) * 2, (e.clientY - r.top) * 2]; };
+      pad.onpointerdown = e => { drawing = true; last = pt(e); pad.setPointerCapture(e.pointerId); };
+      pad.onpointermove = e => { if (!drawing) return; const p = pt(e); ctx.strokeStyle = '#111'; ctx.lineWidth = 5; ctx.lineCap = ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(...last); ctx.lineTo(...p); ctx.stroke(); last = p; state.sigInk = true; };
+      pad.onpointerup = pad.onpointercancel = () => drawing = false;
+      $('#padclear').onclick = () => { ctx.clearRect(0, 0, pad.width, pad.height); state.sigInk = false; };
+      $('#opts').addEventListener('change', e => { if (e.target.name === 'smode') { $('#padbox').hidden = e.target.value !== 'draw'; $('#typebox').hidden = e.target.value === 'draw'; } });
+      const sw = $('#o-sw'); sw.oninput = () => $('#o-sw-v').textContent = sw.value;
+    },
+    async run([f], o) {
+      let png, ar;
+      if (o.smode === 'draw') {
+        if (!state.sigInk) throw new Error('ارسم توقيعك في المربع أولاً.');
+        const c = trimInk($('#pad'), o.color); png = await canvasBytes(c, 'image/png'); ar = c.height / c.width;
+      } else {
+        if (!o.sname.trim()) throw new Error('اكتب اسمك لإنشاء التوقيع.');
+        const ti = await textImage(o.sname.trim(), 40, o.color, 0, '"Aref Ruqaa","Readex Pro",serif', 700); png = ti.bytes; ar = ti.h / ti.w;
+      }
+      const doc = await loadPdf(f), pages = doc.getPages(), idx = pagesOpt(o, pages.length), img = await doc.embedPng(png);
+      const w = +o.sw, h = w * ar;
+      idx.forEach(i => { const { width: W, height: H } = pages[i].getSize(); pages[i].drawImage(img, { ...placeBox(o.pos, W, H, w, h, 40), width: w, height: h }); });
+      return { blob: pdfBlob(await doc.save()), filename: `${baseName(f.name)}-موقع.pdf`, note: `وُقّعت ${idx.length} صفحة` };
+    }
+  },
+  watermark: {
+    cat: 'edit', name: 'علامة مائية', accept: 'pdf', btn: 'إضافة العلامة',
+    desc: 'اكتب نصاً شفافاً فوق كل صفحات الملف، بالعربية أو بأي لغة.',
+    options: () => `
+      <div class="fld"><label for="o-text">النص</label><input type="text" id="o-text" name="text" value="سري — للاستخدام الداخلي"></div>
+      <div class="fld"><span class="lb">الموضع</span>${radio('pos', [['diag', 'قطري في المنتصف'], ['center', 'أفقي في المنتصف'], ['tile', 'متكرر على الصفحة']], 'diag')}</div>
+      <div class="fld"><label for="o-color">اللون</label><select id="o-color" name="color"><option value="#6b7280">رمادي</option><option value="#c0262d">أحمر</option><option value="#1d3fbf">أزرق</option><option value="#111111">أسود</option></select></div>
+      <div class="fld"><label for="o-size">حجم الخط: <output id="o-size-v">48</output></label><input type="range" id="o-size" name="size" min="16" max="120" value="48"></div>
+      <div class="fld"><label for="o-op">الشفافية: <output id="o-op-v">25</output>%</label><input type="range" id="o-op" name="op" min="5" max="100" value="25"></div>`,
+    mount() { [['o-size', 'o-size-v'], ['o-op', 'o-op-v']].forEach(([a, b]) => { const el = $('#' + a); el.oninput = () => $('#' + b).textContent = el.value; }); },
+    async run([f], o, prog) {
+      if (!o.text.trim()) throw new Error('اكتب نص العلامة المائية أولاً.');
+      const doc = await loadPdf(f), ti = await textImage(o.text.trim(), +o.size, o.color, o.pos === 'center' ? 0 : 35);
+      const img = await doc.embedPng(ti.bytes), op = +o.op / 100, pages = doc.getPages();
+      pages.forEach((p, i) => {
+        prog(i, pages.length, `الصفحة ${i + 1} من ${pages.length}`);
+        const { width: W, height: H } = p.getSize();
+        if (o.pos === 'tile') {
+          const sx = ti.w + 40, sy = ti.h + 50; let row = 0;
+          for (let y = -ti.h / 2; y < H; y += sy, row++) for (let x = (row % 2 ? sx / 2 : 0) - ti.w / 2; x < W; x += sx) p.drawImage(img, { x, y, width: ti.w, height: ti.h, opacity: op });
+        } else {
+          const s = Math.min(1, (W * .9) / ti.w, (H * .9) / ti.h), w = ti.w * s, h = ti.h * s;
+          p.drawImage(img, { x: (W - w) / 2, y: (H - h) / 2, width: w, height: h, opacity: op });
+        }
+      });
+      return { blob: pdfBlob(await doc.save()), filename: `${baseName(f.name)}-علامة.pdf`, note: `${pages.length} صفحة` };
+    }
+  },
+  'page-numbers': {
+    cat: 'edit', name: 'ترقيم الصفحات', accept: 'pdf', btn: 'إضافة الأرقام',
+    desc: 'أضف أرقام الصفحات في الموضع والصيغة التي تريدها.',
+    options: () => `
+      <div class="fld"><label for="o-pos">الموضع</label><select id="o-pos" name="pos"><option value="bc" selected>أسفل الوسط</option><option value="br">أسفل اليمين</option><option value="bl">أسفل اليسار</option><option value="tc">أعلى الوسط</option><option value="tr">أعلى اليمين</option><option value="tl">أعلى اليسار</option></select></div>
+      <div class="fld"><label for="o-fmt">الصيغة</label><select id="o-fmt" name="fmt"><option value="n">3</option><option value="nt">3 / 12</option><option value="dash">- 3 -</option><option value="page">Page 3 of 12</option></select></div>
+      <div class="row2"><div class="fld"><label for="o-start">يبدأ من</label><input type="number" id="o-start" name="start" value="1" min="0"></div>
+      <div class="fld"><label for="o-fs">حجم الخط</label><select id="o-fs" name="fs"><option value="9">صغير</option><option value="11" selected>متوسط</option><option value="14">كبير</option></select></div></div>
+      <label class="chk"><input type="checkbox" name="skip" id="o-skip"> تخطّي الصفحة الأولى (الغلاف)</label>`,
+    async run([f], o) {
+      const doc = await loadPdf(f), font = await doc.embedFont(StandardFonts.Helvetica);
+      const pages = doc.getPages(), fs = +o.fs, M = 28, off = o.skip ? 1 : 0, st = +o.start || 0, total = pages.length - off + st - 1;
+      pages.forEach((p, i) => {
+        if (i < off) return;
+        const n = st + i - off, t = { n: `${n}`, nt: `${n} / ${total}`, dash: `- ${n} -`, page: `Page ${n} of ${total}` }[o.fmt];
+        const { width: W, height: H } = p.getSize(), tw = font.widthOfTextAtSize(t, fs);
+        const x = o.pos[1] === 'c' ? (W - tw) / 2 : o.pos[1] === 'r' ? W - M - tw : M;
+        p.drawText(t, { x, y: o.pos[0] === 'b' ? M - fs / 3 : H - M - fs / 2, size: fs, font, color: rgb(.22, .24, .3) });
+      });
+      return { blob: pdfBlob(await doc.save()), filename: `${baseName(f.name)}-مرقم.pdf`, note: `${pages.length - off} صفحة مرقمة` };
+    }
+  },
+  crop: {
+    cat: 'edit', name: 'قص PDF', accept: 'pdf', btn: 'قص الصفحات',
+    desc: 'قصّ الهوامش من أطراف الصفحات بالمليمتر.',
+    options: () => `
+      <div class="row2">${[['top', 'أعلى'], ['bottom', 'أسفل'], ['right', 'يمين'], ['left', 'يسار']].map(([k, t]) => `<div class="fld"><label for="o-${k}">${t} (مم)</label><input type="number" id="o-${k}" name="${k}" value="15" min="0"></div>`).join('')}</div>
+      ${pagePick()}`,
+    async run([f], o) {
+      const doc = await loadPdf(f), pages = doc.getPages(), idx = pagesOpt(o, pages.length), mm = 72 / 25.4;
+      const [t, b, r, l] = ['top', 'bottom', 'right', 'left'].map(k => Math.max(0, +o[k] || 0) * mm);
+      idx.forEach(i => {
+        const mb = pages[i].getMediaBox(), w = mb.width - l - r, h = mb.height - t - b;
+        if (w < 20 || h < 20) throw new Error('الهوامش أكبر من حجم الصفحة. قلّل القيم.');
+        pages[i].setCropBox(mb.x + l, mb.y + b, w, h);
+      });
+      return { blob: pdfBlob(await doc.save()), filename: `${baseName(f.name)}-مقصوص.pdf`, note: `قُصّت ${idx.length} صفحة` };
+    }
+  },
+  redact: {
+    cat: 'sec', name: 'إخفاء معلومات', accept: 'pdf', btn: 'إخفاء الكلمات',
+    desc: 'ابحث عن كلمات أو أرقام حساسة وغطّها بمستطيلات سوداء بشكل نهائي.',
+    options: () => `
+      <div class="fld"><label for="o-words">الكلمات أو الأرقام المراد إخفاؤها</label><textarea id="o-words" name="words" placeholder="سطر لكل كلمة">ملف تجريبي</textarea></div>
+      <label class="chk"><input type="checkbox" name="nocase" id="o-nocase" checked> تجاهل حالة الأحرف اللاتينية</label>
+      <p class="hint">تتحول الصفحات إلى صور بعد الإخفاء حتى لا يمكن استرجاع النص المخفي.</p>`,
+    async run([f], o, prog) {
+      const terms = o.words.split(/\n|,|،/).map(s => s.trim()).filter(Boolean);
+      if (!terms.length) throw new Error('اكتب كلمة واحدة على الأقل.');
+      const norm = s => o.nocase ? s.toLowerCase() : s;
+      const doc = await openPdfjs(f), pages = []; let hits = 0;
+      for (let i = 1; i <= doc.numPages; i++) {
+        prog(i - 1, doc.numPages, `فحص الصفحة ${i} من ${doc.numPages}`);
+        const r = await renderPage(doc, i, { scale: 2 }), x = r.canvas.getContext('2d');
+        const tc = await r.page.getTextContent();
+        x.fillStyle = '#000';
+        for (const it of tc.items) {
+          if (!it.str) continue;
+          const s = norm(it.str);
+          const tx = pdfjsLib.Util.transform(r.vp.transform, it.transform);
+          const fh = Math.hypot(tx[2], tx[3]), wpx = it.width * r.vp.scale, cw = wpx / Math.max(it.str.length, 1);
+          const rtl = AR.test(it.str);
+          for (const t of terms) {
+            const nt = norm(t); let k = s.indexOf(nt);
+            while (k >= 0) {
+              const x0 = rtl ? tx[4] + wpx - cw * (k + nt.length) : tx[4] + cw * k;
+              x.fillRect(x0 - 3, tx[5] - fh * 1.05, cw * nt.length + 6, fh * 1.35); hits++;
+              k = s.indexOf(nt, k + nt.length);
+            }
+          }
+        }
+        pages.push({ canvas: r.canvas, w: r.w, h: r.h, q: .9 });
+      }
+      doc.destroy();
+      if (!hits) throw new Error('لم نجد أياً من هذه الكلمات في نص الملف.');
+      return { blob: pdfBlob(await imagesToPdf(pages)), filename: `${baseName(f.name)}-مخفي.pdf`, note: `أُخفي ${hits} موضعاً` };
+    }
+  },
+  compare: {
+    cat: 'sec', name: 'مقارنة PDF', multi: true, max: 2, accept: 'pdf', btn: 'مقارنة الملفين',
+    desc: 'قارن نسختين من مستند واحد واكتشف ما تغيّر بينهما بصرياً.',
+    options: () => `<p class="hint">الملف الأول هو الأصل والثاني هو النسخة الجديدة. في الملف الناتج تظهر النسخة الجديدة باهتة، وكل ما تغيّر مُعلَّم بالأحمر.</p>`,
+    async run(files, o, prog) {
+      if (files.length !== 2) throw new Error('أضف ملفين بالضبط للمقارنة.');
+      const A = await openPdfjs(files[0]), B = await openPdfjs(files[1]), n = Math.max(A.numPages, B.numPages), pages = [], changed = [];
+      for (let i = 1; i <= n; i++) {
+        prog(i - 1, n, `مقارنة الصفحة ${i} من ${n}`);
+        const rb = i <= B.numPages ? await renderPage(B, i, { scale: 1.5 }) : null, ra = i <= A.numPages ? await renderPage(A, i, { scale: 1.5 }) : null;
+        const base = rb || ra, c = base.canvas, x = c.getContext('2d');
+        if (!ra || !rb) { x.fillStyle = 'rgba(220,30,40,.22)'; x.fillRect(0, 0, c.width, c.height); changed.push(i); }
+        else {
+          const t = document.createElement('canvas'); t.width = c.width; t.height = c.height;
+          t.getContext('2d').drawImage(ra.canvas, 0, 0, c.width, c.height);
+          const da = t.getContext('2d').getImageData(0, 0, c.width, c.height).data, img = x.getImageData(0, 0, c.width, c.height), d = img.data;
+          let cnt = 0;
+          for (let p = 0; p < d.length; p += 4) {
+            const diff = Math.abs(d[p] - da[p]) + Math.abs(d[p + 1] - da[p + 1]) + Math.abs(d[p + 2] - da[p + 2]);
+            if (diff > 90) { d[p] = 225; d[p + 1] = 30; d[p + 2] = 45; cnt++; }
+            else { const g = (d[p] + d[p + 1] + d[p + 2]) / 3; d[p] = d[p + 1] = d[p + 2] = 255 - (255 - g) * .3; }
+          }
+          x.putImageData(img, 0, 0);
+          if (cnt > c.width * c.height * .0002) changed.push(i);
+          ra.canvas.width = 0;
+        }
+        pages.push({ canvas: c, w: base.w, h: base.h, q: .85 });
+        await tick();
+      }
+      A.destroy(); B.destroy();
+      return { blob: pdfBlob(await imagesToPdf(pages)), filename: 'مقارنة.pdf', note: changed.length ? `تغييرات في ${changed.length} صفحة: ${changed.join('، ')}` : 'لا توجد اختلافات مرئية' };
+    }
+  },
+  summarize: {
+    cat: 'ai', name: 'تلخيص PDF', accept: 'pdf', btn: 'تلخيص بالذكاء الاصطناعي', ai: true,
+    desc: 'احصل على ملخص واضح لأهم ما في المستند، بالعربية أو بلغة أخرى.',
+    options: () => `
+      <div class="fld"><span class="lb">نوع الملخص</span>${radio('len', [['short', 'مختصر', 'فقرة قصيرة ونقاط رئيسية'], ['long', 'مفصّل', 'عناوين لكل قسم مع نقاطه']], 'short')}</div>
+      <div class="fld"><label for="o-lang">لغة الملخص</label>${langSelect('lang', 'ar')}</div>
+      <p class="hint">يعمل بـ Claude عند فتح الصفحة داخل Claude، ويُطلب إذنك عند أول استخدام.</p>`,
+    async run([f], o, prog, stream) {
+      const text = await pdfText(f, prog), cut = text.slice(0, 80000), s = await getSample();
+      prog(1, 2, 'يكتب Claude الملخص');
+      const style = o.len === 'short' ? 'فقرة تمهيدية من سطرين أو ثلاثة، ثم من 5 إلى 8 نقاط رئيسية.' : 'فقرة تمهيدية، ثم عنوان قصير لكل قسم مهم تتبعه نقاطه، ثم خاتمة بأهم الاستنتاجات.';
+      const prompt = `لخّص المستند التالي. الشكل المطلوب: ${style}\nلغة الملخص: ${langName(o.lang)}.\nاكتب نصاً عادياً بلا رموز ماركداون: كل نقطة تبدأ بـ "• "، وكل عنوان في سطر مستقل ينتهي بنقطتين.\nاعتمد على المستند فقط ولا تضف معلومات من خارجه.${cut.length < text.length ? '\nملاحظة: المستند طويل وهذا جزؤه الأول.' : ''}\n\n<document>\n${cut}\n</document>`;
+      const out = await ask(s, prompt, stream);
+      return { text: out, blob: await docxFromText(out), filename: `${baseName(f.name)}-ملخص.docx`, note: cut.length < text.length ? 'لُخّص الجزء الأول من مستند طويل' : '' };
+    }
+  },
+  translate: {
+    cat: 'ai', name: 'ترجمة PDF', accept: 'pdf', btn: 'ترجمة بالذكاء الاصطناعي', ai: true,
+    desc: 'ترجم نص المستند كاملاً إلى لغة أخرى واحصل عليه في ملف Word.',
+    options: () => `
+      <div class="fld"><label for="o-lang">الترجمة إلى</label>${langSelect('lang', 'ar')}</div>
+      <p class="hint">يُترجَم النص فقط ويُحفظ بصيغة Word. الحد الأقصى نحو 40 صفحة نصية في المرة الواحدة.</p>`,
+    async run([f], o, prog, stream) {
+      const text = await pdfText(f, prog), s = await getSample(), cap = text.slice(0, 60000);
+      const chunks = []; let cur = '';
+      for (const p of cap.split(/\n{2,}/)) { if ((cur + p).length > 6000 && cur) { chunks.push(cur); cur = ''; } cur += p + '\n\n'; }
+      if (cur.trim()) chunks.push(cur);
+      let done = '';
+      for (let i = 0; i < chunks.length; i++) {
+        prog(i, chunks.length, `ترجمة الجزء ${i + 1} من ${chunks.length}`);
+        const prompt = `ترجم النص التالي إلى ${langName(o.lang)} ترجمة دقيقة وطبيعية. حافظ على تقسيم الأسطر والفقرات كما هو. أعد الترجمة فقط بلا مقدمة أو تعليق.\n\n<text>\n${chunks[i]}\n</text>`;
+        const t = await ask(s, prompt, part => stream(done + part));
+        done += t.trim() + '\n\n'; stream(done);
+      }
+      return { text: done.trim(), blob: await docxFromText(done.trim()), filename: `${baseName(f.name)}-${o.lang}.docx`, note: cap.length < text.length ? 'تُرجم الجزء الأول من مستند طويل' : `${chunks.length} أجزاء` };
+    }
+  },
+};
+function trimInk(src, color) {
+  const x = src.getContext('2d'), { width: W, height: H } = src, d = x.getImageData(0, 0, W, H).data;
+  let x0 = W, y0 = H, x1 = -1, y1 = -1;
+  for (let y = 0; y < H; y++) for (let X = 0; X < W; X++) if (d[(y * W + X) * 4 + 3] > 10) { if (X < x0) x0 = X; if (X > x1) x1 = X; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  const P = 8, c = document.createElement('canvas'); c.width = x1 - x0 + P * 2; c.height = y1 - y0 + P * 2;
+  const o = c.getContext('2d'); o.drawImage(src, x0 - P, y0 - P, c.width, c.height, 0, 0, c.width, c.height);
+  o.globalCompositeOperation = 'source-in'; o.fillStyle = color; o.fillRect(0, 0, c.width, c.height);
+  return c;
+}
+
+/* ---------- accepted file kinds ---------- */
+const ACC = {
+  pdf: { attr: '.pdf,application/pdf', test: f => /\.pdf$/i.test(f.name) || f.type === 'application/pdf', err: 'اختر ملفات بصيغة PDF.', one: 'اختر ملف PDF', many: 'اختر ملفات PDF' },
+  img: { attr: 'image/jpeg,image/png,image/webp', test: f => /^image\/(jpeg|png|webp)$/.test(f.type) || /\.(jpe?g|png|webp)$/i.test(f.name), err: 'اختر صوراً بصيغة JPG أو PNG أو WEBP.', many: 'اختر الصور' },
+  docx: { attr: '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document', test: f => /\.docx$/i.test(f.name), err: 'اختر ملف Word بصيغة ‎.docx.', one: 'اختر ملف Word' },
+  xlsx: { attr: '.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv', test: f => /\.(xlsx|xls|csv)$/i.test(f.name), err: 'اختر ملف Excel أو CSV.', one: 'اختر ملف Excel' },
+};
+
+/* ---------- samples ---------- */
+async function samplePage(i, hue, label, alter) {
+  const c = document.createElement('canvas'); c.width = 1190; c.height = 1684;
+  const x = c.getContext('2d');
+  try { await document.fonts.load('700 60px "Readex Pro"'); } catch (e) {}
+  x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+  x.fillStyle = `hsl(${hue} 55% 42%)`; x.fillRect(0, 0, c.width, 210);
+  x.direction = 'rtl'; x.textAlign = 'right'; x.fillStyle = '#fff';
+  x.font = '700 64px "Readex Pro",sans-serif'; x.fillText(label, c.width - 90, 130);
+  x.fillStyle = '#d9dce4';
+  for (let k = 0; k < 14; k++) x.fillRect(90 + (k % 3 === 2 ? 300 : 0), 330 + k * 64, c.width - 180 - (k % 3 === 2 ? 300 : 0), 22);
+  if (alter) { x.fillStyle = `hsl(${hue} 60% 45%)`; x.fillRect(90, 650, 600, 120); }
+  x.fillStyle = `hsl(${hue} 55% 42% / .15)`; x.fillRect(90, 1290, c.width - 180, 260);
+  x.textAlign = 'center'; x.fillStyle = `hsl(${hue} 50% 35%)`; x.font = '700 150px "Readex Pro",sans-serif';
+  x.fillText(String(i).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]), c.width / 2, 1475);
+  return c;
+}
+async function samplePdf(name, n, hue, title, alterPage) {
+  const doc = await PDFDocument.create(), font = await doc.embedFont(StandardFonts.Helvetica);
+  for (let i = 1; i <= n; i++) {
+    const c = await samplePage(i, hue, `${title} · صفحة ${i}`, i === alterPage);
+    const img = await doc.embedJpg(await canvasBytes(c, 'image/jpeg', .8));
+    const p = doc.addPage([595.28, 841.89]); p.drawImage(img, { x: 0, y: 0, width: 595.28, height: 841.89 });
+    p.drawText(`Sample document - page ${i} - Invoice INV-2026-0${i}4`, { x: 45, y: 60, size: 10, font, color: rgb(.35, .37, .43) });
+  }
+  return new File([await doc.save()], name, { type: 'application/pdf' });
+}
+async function sampleTextPdf() {
+  const paras = [{ text: 'تقرير نشاط الربع الثالث 2026', rtl: true, b: true, big: true },
+    { text: 'ارتفعت المبيعات في الربع الثالث بنسبة 18% مقارنة بالربع السابق، مدفوعة بإطلاق خدمة التوصيل في ثلاث ولايات جديدة.', rtl: true },
+    { text: 'سجّل فرع وهران أعلى نمو بنسبة 31%، تلاه فرع قسنطينة بنسبة 22%، فيما استقر أداء فرع الجزائر العاصمة.', rtl: true },
+    { text: 'ارتفعت تكاليف النقل بنسبة 9% بسبب زيادة أسعار الوقود، وتعمل الإدارة على عقد جديد مع شركة نقل محلية.', rtl: true },
+    { text: 'التوصيات: توسيع خدمة التوصيل إلى سطيف وباتنة، ومراجعة عقود الموردين قبل نهاية السنة، وتعيين مسؤول جديد لخدمة العملاء.', rtl: true }];
+  return new File([await buildDocx(paras)], 'تقرير-الربع-الثالث.docx');
+}
+async function loadSamples() {
+  const t = state.tool, b = $('#sample'); b.disabled = true; b.textContent = 'جارٍ تجهيز الملف…';
+  try {
+    if (t.accept === 'img') return await addFiles(await Promise.all([sampleImage('رحلة-١.png', 200, 1), sampleImage('رحلة-٢.png', 20, 2), sampleImage('رحلة-٣.png', 140, 3)]));
+    if (t.accept === 'docx') return await addFiles([await sampleTextPdf()]);
+    if (t.accept === 'xlsx') {
+      await lib('xlsx');
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['الشهر', 'المبيعات', 'التكاليف', 'الربح'], ['يوليو', 1250000, 830000, 420000], ['أغسطس', 1410000, 860000, 550000], ['سبتمبر', 1380000, 900000, 480000]]), 'الربع الثالث');
+      return await addFiles([new File([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], 'ميزانية-2026.xlsx')]);
+    }
+    if (t.id === 'compare') return await addFiles([await samplePdf('عقد-النسخة-الأولى.pdf', 3, 200, 'عقد توريد'), await samplePdf('عقد-النسخة-الثانية.pdf', 3, 200, 'عقد توريد', 2)]);
+    if (t.multi) return await addFiles([await samplePdf('تقرير-الربع-الأول.pdf', 3, 228, 'تقرير الربع الأول'), await samplePdf('تقرير-الربع-الثاني.pdf', 2, 160, 'تقرير الربع الثاني')]);
+    if (['pdf-to-word', 'pdf-to-excel', 'summarize', 'translate'].includes(t.id)) {
+      return await addFiles([await sampleRealTextPdf()]);
+    }
+    return await addFiles([await samplePdf('ملف-تجريبي.pdf', 6, 228, 'ملف تجريبي')]);
+  } catch (e) { toast(e.message || 'تعذّر تجهيز الملف التجريبي.'); }
+  finally { const s = $('#sample'); if (s) { s.disabled = false; s.textContent = 'جرّب بملف تجريبي'; } }
+}
+async function sampleRealTextPdf() {
+  // English text keeps a real text layer (standard PDF fonts have no Arabic glyphs)
+  const doc = await PDFDocument.create(), font = await doc.embedFont(StandardFonts.Helvetica), bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const p = doc.addPage([595.28, 841.89]); let y = 780;
+  const line = (t, f = font, s = 11) => { p.drawText(t, { x: 50, y, size: s, font: f, color: rgb(.1, .1, .12) }); y -= s * 1.8; };
+  line('Q3 2026 Activity Report', bold, 20); y -= 6;
+  ['Sales rose 18% compared with the previous quarter, driven by the launch of home', 'delivery in three new provinces. The Oran branch recorded the highest growth (31%).', 'Transport costs increased by 9% because of higher fuel prices.', 'Recommendations: extend delivery to Setif and Batna, and review supplier contracts', 'before the end of the year.'].forEach(t => line(t));
+  y -= 10; line('Branch            Sales (DZD)        Growth', bold);
+  [['Oran', '4820000', '31%'], ['Constantine', '3150000', '22%'], ['Algiers', '6400000', '2%']].forEach(([a, b, c]) => {
+    p.drawText(a, { x: 50, y, size: 11, font }); p.drawText(b, { x: 170, y, size: 11, font }); p.drawText(c, { x: 290, y, size: 11, font }); y -= 20;
+  });
+  return new File([await doc.save()], 'q3-report.pdf', { type: 'application/pdf' });
+}
+async function sampleImage(name, hue, i) {
+  const c = document.createElement('canvas'); c.width = 1200; c.height = 800;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, 800); g.addColorStop(0, `hsl(${hue} 60% 75%)`); g.addColorStop(1, `hsl(${hue + 30} 50% 45%)`);
+  x.fillStyle = g; x.fillRect(0, 0, 1200, 800);
+  x.fillStyle = `hsl(${hue} 40% 25%)`; x.beginPath(); x.moveTo(0, 800); x.lineTo(380, 380); x.lineTo(640, 640); x.lineTo(860, 460); x.lineTo(1200, 800); x.fill();
+  x.fillStyle = '#ffffff88'; x.beginPath(); x.arc(900, 200, 80, 0, 7); x.fill();
+  x.fillStyle = '#fff'; x.font = '700 56px "Readex Pro",sans-serif'; x.direction = 'rtl'; x.textAlign = 'right'; x.fillText(`صورة تجريبية ${i}`, 1140, 100);
+  return new File([await canvasBlob(c, 'image/png')], name, { type: 'image/png' });
+}
+
+/* ---------- state & rendering ---------- */
+const state = { tool: null, files: [], busy: false, org: null, result: null, cat: 'all', sigInk: false };
+const view = $('#view');
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 3800); }
+
+function renderHome() {
+  document.title = 'Genius PDF';
+  const ids = ORDER.filter(id => state.cat === 'all' || TOOLS[id].cat === state.cat);
+  view.innerHTML = `
+    <section class="intro"><h1>كل أدوات PDF التي تحتاجها، في مكان واحد</h1>
+      <p>دمج، تقسيم، ضغط، تحويل من وإلى Word وPowerPoint وExcel والصور، توقيع، علامة مائية${IS_APP ? '.' : '،'} ${IS_APP ? '' : 'وتلخيص وترجمة بالذكاء الاصطناعي. '}مجاناً وبدون رفع ملفاتك.</p></section>
+    <div class="chips" role="toolbar" aria-label="تصنيفات الأدوات">${CATS.filter(([id]) => !(IS_APP && id === 'ai')).map(([id, n]) => `<button class="chip" type="button" data-cat="${id}" aria-pressed="${state.cat === id}">${n}</button>`).join('')}</div>
+    <div class="cards">${ids.map(id => { const t = TOOLS[id]; return `<a class="card" href="#${id}" style="--tc:var(--c-${t.cat})"><span class="ticon">${ICONS[id]}</span><b>${t.name}</b><span class="d">${t.desc}</span>${t.ai ? '<span class="tag">Claude</span>' : ''}</a>`; }).join('')}</div>
+    <p class="limits">غير متوفر في هذا الإصدار لأنه يحتاج إلى خادم: حماية الملف بكلمة مرور وفكّها، التعرف الضوئي على النص OCR، تحويل PowerPoint وHTML إلى PDF، وصيغة PDF/A.</p>`;
+  view.querySelectorAll('.chip').forEach(b => b.onclick = () => { state.cat = b.dataset.cat; renderHome(); });
+}
+
+function renderTool() {
+  const t = state.tool, A = ACC[t.accept];
+  view.innerHTML = `
+    <section style="--tc:var(--c-${t.cat})">
+      <a class="back" href="#">→ كل الأدوات</a>
+      <div class="tool-head"><span class="ticon">${ICONS[t.id]}</span><div><h1>${t.name}</h1><p>${t.desc}</p></div></div>
+      <div class="work">
+        <div class="stage">
+          <label class="drop" id="drop"><input class="vh" type="file" id="fin" accept="${A.attr}" ${t.multi ? 'multiple' : ''}>
+            <span class="up">${UP}</span><span><b id="dropT"></b><span class="sub"><br>أو اسحبه وأفلته هنا</span></span></label>
+          <button class="sample" id="sample" type="button">جرّب بملف تجريبي</button>
+          <div id="list"></div>
+          <div id="out"></div>
+        </div>
+        <aside class="panel">
+          <h2>الخيارات</h2>
+          <form class="opts" id="opts" onsubmit="return false">${t.options ? t.options() : '<p class="hint">لا توجد خيارات إضافية. رتّب الملفات ثم اضغط الزر.</p>'}</form>
+          <button class="run" id="run" type="button">${t.btn}</button>
+          <div class="status" id="status" aria-live="polite"></div>
+          <div id="result"></div>
+        </aside>
+      </div>
+    </section>`;
+  const fin = $('#fin'), drop = $('#drop');
+  fin.onchange = () => { addFiles(fin.files); fin.value = ''; };
+  ['dragenter', 'dragover'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', ev => addFiles(ev.dataTransfer.files));
+  $('#sample').onclick = loadSamples;
+  $('#run').onclick = run;
+  $('#list').onclick = onListClick;
+  const opts = $('#opts');
+  opts.addEventListener('input', clearResult);
+  opts.addEventListener('change', e => { if (e.target.name === 'pages') $('#o-custom').hidden = e.target.value !== 'custom'; });
+  t.mount?.();
+  renderList();
+}
+
+function renderList() {
+  const t = state.tool, list = $('#list'); if (!list) return;
+  const has = state.files.length > 0, A = ACC[t.accept];
+  $('#drop').classList.toggle('compact', has);
+  $('#dropT').textContent = has ? (t.multi ? 'أضف ملفات أخرى' : 'استبدال الملف') : (t.multi ? A.many : A.one) || A.many;
+  $('#sample').hidden = has;
+  $('#run').disabled = !has || state.busy;
+  if (t.id === 'organize' && state.org) {
+    const pages = state.org.pages, th = state.org.thumbs;
+    list.innerHTML = `<div class="stage">
+      <div class="org-bar"><span>${pages.length} صفحة · ${esc(state.files[0].name)}</span><button class="link" data-act="reset" type="button">استعادة الترتيب الأصلي</button></div>
+      <div class="pgrid">${pages.map((p, i) => `<figure class="pg" data-i="${i}">
+        <div class="pthumb">${th[p.src] ? '' : '<span class="spin"></span>'}<img data-src="${p.src}" src="${th[p.src] || ''}" ${th[p.src] ? '' : 'hidden'} alt="صفحة ${p.src + 1}" style="transform:rotate(${p.rot}deg) scale(${p.rot % 180 ? .74 : 1})"></div>
+        <figcaption><span class="pn">${i + 1}</span><span>الأصل ${p.src + 1}${p.rot ? ` · ${p.rot}°` : ''}</span></figcaption>
+        <div class="pact"><button class="ib" data-act="prev" ${i === 0 ? 'disabled' : ''} aria-label="تقديم" type="button">→</button><button class="ib" data-act="rot" aria-label="تدوير" type="button">↻</button><button class="ib" data-act="next" ${i === pages.length - 1 ? 'disabled' : ''} aria-label="تأخير" type="button">←</button><button class="ib del" data-act="del" aria-label="حذف" type="button">✕</button></div>
+      </figure>`).join('')}</div></div>`;
+    return;
+  }
+  const fs = state.files;
+  list.innerHTML = has ? `<ol class="files">${fs.map((f, i) => `<li class="fcard" data-id="${f.id}">
+    ${t.multi ? `<span class="ord">${i + 1}</span>` : ''}
+    <div class="fthumb">${f.thumb ? `<img src="${f.thumb}" alt="">` : f.error ? '<b style="color:var(--danger)">!</b>' : f.ext ? `<span class="ext">${f.ext}</span>` : '<span class="spin"></span>'}</div>
+    <div class="fmeta"><b title="${esc(f.name)}">${esc(f.name)}</b><span>${fmtSize(f.size)}${f.pages ? ` · ${f.pages} صفحة` : ''}</span>${f.error ? `<em>${f.error}</em>` : ''}</div>
+    <div class="fact">${t.multi && fs.length > 1 ? `<button class="ib" data-act="up" ${i === 0 ? 'disabled' : ''} aria-label="تحريك للأعلى" type="button">↑</button><button class="ib" data-act="down" ${i === fs.length - 1 ? 'disabled' : ''} aria-label="تحريك للأسفل" type="button">↓</button>` : ''}<button class="ib del" data-act="rm" aria-label="إزالة" type="button">✕</button></div>
+  </li>`).join('')}</ol>` : '';
+}
+
+function onListClick(e) {
+  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const act = b.dataset.act; clearResult();
+  if (state.tool.id === 'organize' && state.org) {
+    const P = state.org.pages;
+    if (act === 'reset') { state.org.pages = Array.from({ length: state.org.n }, (_, i) => ({ src: i, rot: 0 })); return renderList(); }
+    const i = +b.closest('.pg').dataset.i;
+    if (act === 'del') P.splice(i, 1);
+    if (act === 'rot') P[i].rot = (P[i].rot + 90) % 360;
+    if (act === 'prev' && i > 0) [P[i - 1], P[i]] = [P[i], P[i - 1]];
+    if (act === 'next' && i < P.length - 1) [P[i + 1], P[i]] = [P[i], P[i + 1]];
+    return renderList();
+  }
+  const id = +b.closest('.fcard').dataset.id, F = state.files, i = F.findIndex(f => f.id === id);
+  if (act === 'rm') { F.splice(i, 1); if (!F.length) state.org = null; }
+  if (act === 'up' && i > 0) [F[i - 1], F[i]] = [F[i], F[i - 1]];
+  if (act === 'down' && i < F.length - 1) [F[i + 1], F[i]] = [F[i], F[i + 1]];
+  renderList();
+}
+
+async function addFiles(list) {
+  const t = state.tool, A = ACC[t.accept];
+  const arr = [...list].filter(A.test);
+  if (!arr.length) return toast(A.err);
+  if (arr.length < list.length) toast('تجاهلنا ملفات بصيغة غير مدعومة.');
+  if (!t.multi) { arr.splice(1); state.files = []; state.org = null; }
+  clearResult();
+  const items = [];
+  for (const f of arr) items.push({ id: ++uid, name: f.name, size: f.size, file: f, bytes: new Uint8Array(await f.arrayBuffer()), ext: t.accept === 'docx' ? 'DOCX' : t.accept === 'xlsx' ? (f.name.split('.').pop() || 'XLSX').toUpperCase() : '' });
+  state.files.push(...items);
+  if (t.max) state.files = state.files.slice(-t.max);
+  renderList();
+  for (const it of items) {
+    if (t.accept === 'img') { it.thumb = URL.createObjectURL(it.file); renderList(); continue; }
+    if (t.accept !== 'pdf') continue;
+    try {
+      const doc = await openPdfjs(it); it.pages = doc.numPages;
+      const { canvas } = await renderPage(doc, 1, { width: 92 }); it.thumb = canvas.toDataURL('image/jpeg', .8);
+      doc.destroy();
+    } catch (e) { it.error = 'تعذّرت قراءة الملف. قد يكون تالفاً أو محمياً بكلمة مرور.'; }
+    if (state.tool === t && t.id !== 'organize') renderList();
+  }
+  if (t.id === 'organize') { if (items[0] && !items[0].error) loadOrganize(items[0]); else renderList(); }
+}
+
+async function loadOrganize(f) {
+  let doc; try { doc = await openPdfjs(f); } catch (e) { return; }
+  const org = state.org = { fileId: f.id, n: doc.numPages, thumbs: {}, pages: Array.from({ length: doc.numPages }, (_, i) => ({ src: i, rot: 0 })) };
+  renderList();
+  for (let i = 0; i < doc.numPages; i++) {
+    if (state.org !== org) break;
+    const { canvas } = await renderPage(doc, i + 1, { width: 220 });
+    org.thumbs[i] = canvas.toDataURL('image/jpeg', .8);
+    document.querySelectorAll(`img[data-src="${i}"]`).forEach(img => { img.src = org.thumbs[i]; img.hidden = false; img.previousElementSibling?.remove(); });
+  }
+  doc.destroy();
+}
+
+function readOpts() {
+  const o = {}, form = $('#opts'); if (!form) return o;
+  form.querySelectorAll('input,select,textarea').forEach(el => {
+    if (!el.name) return;
+    if (el.type === 'radio') { if (el.checked) o[el.name] = el.value; }
+    else if (el.type === 'checkbox') o[el.name] = el.checked;
+    else o[el.name] = el.value;
+  });
+  return o;
+}
+function clearResult() {
+  state.result = null;
+  const r = $('#result'); if (r) r.innerHTML = '';
+  const s = $('#status'); if (s && !state.busy) { s.innerHTML = ''; s.className = 'status'; }
+}
+
+async function run() {
+  if (state.busy || !state.files.length) return;
+  const t = state.tool, bad = state.files.find(f => f.error);
+  if (bad) return showErr(`أزل الملف "${bad.name}" أولاً؛ تعذّرت قراءته.`);
+  clearResult(); state.busy = true; $('#run').disabled = true;
+  const st = $('#status'), out = $('#out');
+  out.innerHTML = '';
+  st.innerHTML = `<span id="pt">جارٍ المعالجة…</span><div class="bar"><i id="pb"></i></div>`;
+  const prog = (i, n, msg) => { const pt = $('#pt'), pb = $('#pb'); if (pt) pt.textContent = msg + '…'; if (pb) pb.style.width = Math.round(i / n * 100) + '%'; };
+  const stream = txt => { let el = $('#live'); if (!el) { out.innerHTML = '<div class="aiout" id="live" dir="auto"></div>'; el = $('#live'); } el.textContent = txt; };
+  if (t.ai) stream('');
+  try {
+    await tick();
+    const res = await t.run(state.files, readOpts(), prog, stream);
+    state.result = res; st.innerHTML = '';
+    if (res.text) stream(res.text);
+    $('#result').innerHTML = `<div class="result"><div class="rf">${DONE}<div><b>${esc(res.filename)}</b><span>${fmtSize(res.blob.size)}${res.note ? ' · ' + esc(res.note) : ''}</span></div></div>
+      <button class="dl" id="dl" type="button">تنزيل الملف</button><p class="dlmsg" id="dlmsg" hidden></p></div>`;
+    $('#dl').onclick = () => download(res);
+  } catch (e) { console.error(e); showErr(e.message || 'حدث خطأ غير متوقع. جرّب ملفاً آخر.'); if (t.ai && !$('#live')?.textContent) out.innerHTML = ''; }
+  finally { state.busy = false; const b = $('#run'); if (b) b.disabled = !state.files.length; }
+}
+function showErr(m) { const st = $('#status'); st.className = 'status err'; st.textContent = m; }
+
+async function download(res) {
+  const msg = $('#dlmsg'), say = m => { msg.textContent = m; msg.hidden = false; };
+  if (window.PDFW_SAVE) { try { say(await window.PDFW_SAVE(res.blob, res.filename)); } catch (e) { say('تعذّر حفظ الملف: ' + (e.message || '')); } return; }
+  if (window.claude?.use) {
+    const d = await window.claude.use('downloads');
+    if (!d) return say('الحفظ غير متاح في هذه النافذة. افتح الصفحة في المتصفح ثم حاول مجدداً.');
+    try { await d.save({ filename: res.filename, data: res.blob }); say('تم حفظ الملف.'); }
+    catch (e) { say({ declined: 'أُلغي الحفظ. اضغط الزر مرة أخرى متى أردت.', rate_limited: 'نافذة حفظ مفتوحة بالفعل. أكملها ثم أعد المحاولة.', too_large: 'الملف أكبر من المسموح هنا.' }[e?.code] || 'تعذّر الحفظ في هذه النافذة.'); }
+    return;
+  }
+  const url = URL.createObjectURL(res.blob), a = document.createElement('a');
+  a.href = url; a.download = res.filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  say('بدأ التنزيل.');
+}
+
+function route() {
+  const id = location.hash.slice(1), t = TOOLS[id];
+  if (!t) { state.tool = null; renderHome(); }
+  else if (state.tool?.id !== id) {
+    state.tool = { ...t, id }; state.files = []; state.org = null; state.result = null; state.sigInk = false;
+    document.title = t.name + ' · Genius PDF';
+    renderTool();
+  }
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', route);
+route();
+</script>
+
+</body>
+</html>
